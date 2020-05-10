@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatshare-deployment
+  namespace: chatshare
+  labels:
+    app: chatshare
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: chatshare
+  template:
+    metadata:
+      labels:
+        app: chatshare
+    spec:
+      containers:
+        - name: chatshare
+          image: madhouseminers/chatshare
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Always
