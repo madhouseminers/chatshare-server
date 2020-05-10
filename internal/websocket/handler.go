@@ -1,7 +1,6 @@
 package websocket
 
 import (
-	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/madhouseminers/chatshare-server/internal/clients"
 	"log"
@@ -41,7 +40,7 @@ func (h *handler) startMessageLoop() {
 	for {
 		_, message, err := h.conn.ReadMessage()
 		if err != nil {
-			fmt.Println("Error in socket: " + err.Error())
+			log.Println("Error in socket: " + err.Error())
 			break
 		}
 

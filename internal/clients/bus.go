@@ -1,6 +1,8 @@
 package clients
 
-import "fmt"
+import (
+	"log"
+)
 
 type clientMessageBus struct {
 	clients map[string]Client
@@ -11,15 +13,17 @@ func CreateBus() *clientMessageBus {
 }
 
 func (b *clientMessageBus) AddClient(client Client) {
+	log.Println("Added client: " + *client.GetName())
 	b.clients[*client.GetName()] = client
-	fmt.Println(b.clients)
 }
 
 func (b *clientMessageBus) RemoveClient(client Client) {
+	log.Println("Removed client: " + *client.GetName())
 	delete(b.clients, *client.GetName())
 }
 
 func (b *clientMessageBus) Broadcast(message *Message) {
+	log.Println(message.GetContent())
 	for _, client := range b.clients {
 		if client.GetName() != message.GetSender().GetName() {
 			client.SendMessage(message)
