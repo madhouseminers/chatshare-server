@@ -40,7 +40,7 @@ func CreateBot(bus messageBus) *bot {
 func (b *bot) gotMessage(_ *discordgo.Session, message *discordgo.MessageCreate) {
 	// Make sure we don't broadcast our own messages back
 	if message.ChannelID == os.Getenv("discordChannel") && b.session.State.User.ID != message.Author.ID {
-		b.bus.Broadcast(clients.CreateMessage(message.Content, b))
+		b.bus.Broadcast(clients.CreateMessage("<"+message.Author.Username+"> "+message.Content, b))
 	}
 }
 

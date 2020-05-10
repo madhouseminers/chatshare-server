@@ -6,7 +6,7 @@ type Message struct {
 }
 
 func CreateMessage(content string, sender Client) *Message {
-	return &Message{content: content, sender: sender}
+	return &Message{content: "[" + *sender.GetName() + "] " + content, sender: sender}
 }
 
 func (m *Message) GetContent() string {
