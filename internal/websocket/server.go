@@ -24,11 +24,14 @@ type httpServer struct {
 }
 
 func StartServer(bus messageBus, ws *sync.WaitGroup) *httpServer {
+	server := &http.Server{
+		Addr: ":8080",
+	}
 	h := &httpServer{bus: bus}
 	http.HandleFunc("/ws", h.upgradeHandler)
 	ws.Add(1)
 	go func() {
-		err := http.ListenAndServe(":8080", nil)
+		err := server.ListenAndServeTLS("server.cer", "server.key")
 		if err != nil {
 			log.Println("Unable to close server: " + err.Error())
 		}
