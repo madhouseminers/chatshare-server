@@ -23,7 +23,7 @@ func (b *clientMessageBus) RemoveClient(client Client) {
 }
 
 func (b *clientMessageBus) Broadcast(message *Message) {
-	log.Println("Broadcasting message from : " + *message.GetSender().GetName() + " : " + message.GetContent())
+	log.Println("Broadcasting message: " + message.GetContent())
 	for _, client := range b.clients {
 		if client.GetName() != message.GetSender().GetName() {
 			client.SendMessage(message)
