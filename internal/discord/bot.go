@@ -27,10 +27,10 @@ func CreateBot(bus messageBus) *bot {
 	}
 	err = discord.Open()
 	if err != nil {
-		log.Println("Error connected to Discord: " + err.Error())
+		log.Println("Error connecting to Discord: " + err.Error())
 	}
 
-	b := &bot{session: discord, bus: bus, name: "DISCORD"}
+	b := &bot{session: discord, bus: bus, name: "Discord"}
 	bus.AddClient(b)
 	b.session.AddHandler(b.gotMessage)
 
