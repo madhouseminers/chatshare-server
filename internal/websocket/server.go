@@ -31,7 +31,7 @@ func StartServer(bus messageBus, ws *sync.WaitGroup) *httpServer {
 	http.HandleFunc("/ws", h.upgradeHandler)
 	ws.Add(1)
 	go func() {
-		err := server.ListenAndServeTLS("server.cer", "server.key")
+		err := server.ListenAndServe()
 		if err != nil {
 			log.Println("Unable to close server: " + err.Error())
 		}
