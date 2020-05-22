@@ -4,6 +4,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/madhouseminers/chatshare-server/internal/clients"
 	"log"
+	"os"
+	"strings"
 )
 
 type handler struct {
@@ -46,13 +48,17 @@ func (h *handler) startMessageLoop() {
 			break
 		}
 
-		log.Println("Got message: " + string(message))
-
 		if h.name == nil {
-			name := string(message)
-			h.name = &name
+			auth := strings.SplitN(string(message), "::", 2)
+			log.Println("Got authentication message from: " + auth[0])
+			if auth[1] != os.Getenv("chatsharePSK") {
+				log.Println("Authentication failed from: " + auth[0])
+				return
+			}
+			h.name = &auth[0]
 			h.bus.AddClient(h)
 		} else {
+			log.Println("Got message: " + string(message))
 			h.bus.Broadcast(clients.CreateMessage(string(message), h))
 		}
 	}
