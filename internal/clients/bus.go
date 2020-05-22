@@ -30,3 +30,7 @@ func (b *clientMessageBus) Broadcast(message *Message) {
 		}
 	}
 }
+
+func (b *clientMessageBus) Direct(message *Message, client string) {
+	b.clients[client].SendMessage(message)
+}

@@ -13,8 +13,8 @@ func main() {
 
 	ws := &sync.WaitGroup{}
 	bus := clients.CreateBus()
-	websocket.StartServer(bus, ws)
 	discord.CreateBot(bus)
+	websocket.StartServer(bus, ws)
 
 	ws.Wait()
 }

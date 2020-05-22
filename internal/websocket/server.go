@@ -14,6 +14,7 @@ var upgrader = websocket.Upgrader{
 }
 
 type messageBus interface {
+	Direct(message *clients.Message, clientName string)
 	AddClient(client clients.Client)
 	RemoveClient(client clients.Client)
 	Broadcast(message *clients.Message)
@@ -29,8 +30,10 @@ func StartServer(bus messageBus, ws *sync.WaitGroup) *httpServer {
 	}
 	h := &httpServer{bus: bus}
 	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-		log.Println("Got health check")
-		writer.Write([]byte("OK"))
+		_, err := writer.Write([]byte("OK"))
+		if err != nil {
+			log.Println("Error responding to health check: " + err.Error())
+		}
 	})
 	http.HandleFunc("/ws", h.upgradeHandler)
 	ws.Add(1)

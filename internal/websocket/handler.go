@@ -28,6 +28,7 @@ func createHandler(conn *websocket.Conn, bus messageBus) *handler {
 		}
 		h.startMessageLoop()
 		if h.name != nil {
+			h.bus.Direct(clients.CreateMessage(*h.name+" has disconnected", h), "Discord")
 			h.bus.RemoveClient(h)
 		}
 		err = h.conn.Close()
@@ -57,6 +58,7 @@ func (h *handler) startMessageLoop() {
 			}
 			h.name = &auth[0]
 			h.bus.AddClient(h)
+			h.bus.Direct(clients.CreateMessage(*h.name+" has connected", h), "Discord")
 		} else {
 			log.Println("Got message: " + string(message))
 			h.bus.Broadcast(clients.CreateMessage(string(message), h))
