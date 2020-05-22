@@ -7,13 +7,13 @@ Usage is open to anyone to use, but we don't provide support or warranty.
 
 The following environment variables are required:
 
-###### chatsharePSK
+##### chatsharePSK
 The Pre-shared Key used by the server and client to authenticate
 
-###### discordToken
+##### discordToken
 The discord token for the bot user to be used
 
-###### discordChannel
+##### discordChannel
 The channel ID for the channel to monitor and post to
 
 ### Connections
