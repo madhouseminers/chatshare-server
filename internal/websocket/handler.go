@@ -28,7 +28,7 @@ func createHandler(conn *websocket.Conn, bus messageBus) *handler {
 		}
 		h.startMessageLoop()
 		if h.name != nil {
-			h.bus.Direct(clients.CreateMessage(*h.name+" has disconnected", h), "Discord")
+			h.bus.Direct(clients.CreateMessage("😱 "+*h.name+" has disconnected", h).SetDirect(), "Discord")
 			h.bus.RemoveClient(h)
 		}
 		err = h.conn.Close()
@@ -58,10 +58,20 @@ func (h *handler) startMessageLoop() {
 			}
 			h.name = &auth[0]
 			h.bus.AddClient(h)
-			h.bus.Direct(clients.CreateMessage(*h.name+" has connected", h), "Discord")
+			h.bus.Direct(clients.CreateMessage("👋 "+*h.name+" has connected", h).SetDirect(), "Discord")
 		} else {
 			log.Println("Got message: " + string(message))
-			h.bus.Broadcast(clients.CreateMessage(string(message), h))
+
+			// If the message starts with <, then broadcast it
+			if message[0] == '<' {
+				h.bus.Broadcast(clients.CreateMessage(string(message), h))
+			} else {
+				if strings.Index(string(message), "has joined") != -1 {
+					h.bus.Direct(clients.CreateMessage("➡ "+string(message), h).SetDirect(), "Discord")
+				} else {
+					h.bus.Direct(clients.CreateMessage("⬅ "+string(message), h).SetDirect(), "Discord")
+				}
+			}
 		}
 	}
 }
