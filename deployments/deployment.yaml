@@ -23,3 +23,16 @@ spec:
           ports:
             - containerPort: 8080
           imagePullPolicy: Always
+          env:
+            - name: chatsharePSK
+              valueFrom:
+                secretKeyRef:
+                  key: psk
+                  name: websocket
+            - name: discordToken
+              valueFrom:
+                secretKeyRef:
+                  key: key
+                  name: discord
+            - name: discordChannel
+              value: "282954282905501696"

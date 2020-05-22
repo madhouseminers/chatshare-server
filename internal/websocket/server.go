@@ -28,6 +28,10 @@ func StartServer(bus messageBus, ws *sync.WaitGroup) *httpServer {
 		Addr: ":8080",
 	}
 	h := &httpServer{bus: bus}
+	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		log.Println("Got health check")
+		writer.Write([]byte("OK"))
+	})
 	http.HandleFunc("/ws", h.upgradeHandler)
 	ws.Add(1)
 	go func() {

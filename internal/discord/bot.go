@@ -33,6 +33,7 @@ func CreateBot(bus messageBus) *bot {
 	b := &bot{session: discord, bus: bus, name: "Discord"}
 	bus.AddClient(b)
 	b.session.AddHandler(b.gotMessage)
+	b.session.ChannelMessageSend(os.Getenv("discordChannel"), "BEEP BOOP 🤖 ChatShare 2.0 is connected")
 
 	return b
 }

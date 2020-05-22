@@ -7,7 +7,6 @@ spec:
   type: LoadBalancer
   selector:
     app: chatshare
-    namespace: chatshare
   ports:
     - protocol: TCP
       port: 8080
