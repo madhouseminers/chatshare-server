@@ -1,20 +1,20 @@
 package clients
 
 type Message struct {
-	direct  bool
-	content string
-	sender  Client
-}
+	direct bool
+	sender Client
 
-func CreateMessage(content string, sender Client) *Message {
-	return &Message{direct: false, content: content, sender: sender}
+	Name        string `json:"name"`
+	Message     string `json:"message"`
+	MessageType string `json:"type"`
+	Sender      string `json:"sender"`
 }
 
 func (m *Message) GetContent() string {
 	if m.direct {
-		return m.content
+		return m.Message
 	} else {
-		return "[" + *m.sender.GetName() + "] " + m.content
+		return "[" + *m.sender.GetName() + "] " + m.Message
 	}
 }
 
@@ -25,4 +25,11 @@ func (m *Message) SetDirect() *Message {
 
 func (m *Message) GetSender() Client {
 	return m.sender
+}
+
+func (m *Message) SetSender(sender Client) {
+	m.sender = sender
+	if m.sender.GetName() != nil {
+		m.Sender = *sender.GetName()
+	}
 }

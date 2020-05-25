@@ -5,19 +5,20 @@ import (
 	"github.com/madhouseminers/chatshare-server/internal/clients"
 	"log"
 	"os"
-	"strings"
 )
 
 type handler struct {
-	conn *websocket.Conn
-	name *string
-	bus  messageBus
+	conn    *websocket.Conn
+	name    *string
+	bus     messageBus
+	version string
 }
 
 func createHandler(conn *websocket.Conn, bus messageBus) *handler {
 	h := &handler{
-		conn: conn,
-		bus:  bus,
+		conn:    conn,
+		bus:     bus,
+		version: "2.0",
 	}
 
 	go func() {
@@ -28,7 +29,10 @@ func createHandler(conn *websocket.Conn, bus messageBus) *handler {
 		}
 		h.startMessageLoop()
 		if h.name != nil {
-			h.bus.Direct(clients.CreateMessage("😱 "+*h.name+" has disconnected", h).SetDirect(), "Discord")
+			connectMsg := &clients.Message{}
+			connectMsg.MessageType = "DISCONNECT"
+			connectMsg.SetSender(h)
+			h.bus.Broadcast(connectMsg)
 			h.bus.RemoveClient(h)
 		}
 		err = h.conn.Close()
@@ -49,38 +53,68 @@ func (h *handler) startMessageLoop() {
 			break
 		}
 
-		if h.name == nil {
-			auth := strings.SplitN(string(message), "::", 2)
-			log.Println("Got authentication message from: " + auth[0])
-			if auth[1] != os.Getenv("chatsharePSK") {
-				log.Println("Authentication failed from: " + auth[0])
-				return
-			}
-			h.name = &auth[0]
-			h.bus.AddClient(h)
-			h.bus.Direct(clients.CreateMessage("👋 "+*h.name+" has connected", h).SetDirect(), "Discord")
-		} else {
-			log.Println("Got message: " + string(message))
+		var msg *clients.Message
 
-			// If the message starts with <, then broadcast it
-			if message[0] == '<' {
-				h.bus.Broadcast(clients.CreateMessage(string(message), h))
-			} else {
-				if strings.Index(string(message), "has joined") != -1 {
-					h.bus.Direct(clients.CreateMessage("➡ "+string(message), h).SetDirect(), "Discord")
-				} else {
-					h.bus.Direct(clients.CreateMessage("⬅ "+string(message), h).SetDirect(), "Discord")
-				}
+		if h.version == "2.0" {
+			msg = parse20(string(message))
+		} else if h.version == "2.1" {
+			msg = parse21(string(message))
+		}
+
+		if msg == nil {
+			log.Println("Unable to process message: " + string(message))
+			continue
+		}
+
+		if msg.MessageType == "VERSION" {
+			h.version = msg.Message
+			continue
+		}
+
+		if msg.MessageType == "PING" {
+			h.SendMessage(&clients.Message{MessageType: "PONG"})
+			continue
+		}
+
+		msg.SetSender(h)
+		if msg.MessageType == "AUTH" {
+			if msg.Message != os.Getenv("chatsharePSK") {
+				log.Println("Authentication failed from: " + msg.Name)
+				break
 			}
+			log.Println("Authentication success from: " + msg.Name)
+
+			h.name = &msg.Name
+			h.bus.AddClient(h)
+
+			connectMsg := &clients.Message{}
+			connectMsg.MessageType = "CONNECT"
+			connectMsg.SetSender(h)
+			err = h.conn.WriteMessage(1, []byte("WELCOME"))
+			if err != nil {
+				log.Println("Unable to send a message to: " + msg.Name + ". Closing connection")
+				break
+			}
+			h.bus.Broadcast(connectMsg)
+		} else {
+			h.bus.Broadcast(msg)
 		}
 	}
 }
 
 func (h *handler) SendMessage(message *clients.Message) {
-	err := h.conn.WriteMessage(1, []byte(message.GetContent()))
-	if err != nil {
-		log.Println("Unable to send message: " + err.Error())
-		return
+	if message.MessageType == "MESSAGE" {
+		var msg []byte
+		if h.version == "2.0" {
+			msg = []byte(build20(message))
+		} else {
+			msg = build21(message)
+		}
+		err := h.conn.WriteMessage(1, msg)
+		if err != nil {
+			log.Println("Unable to send message: " + err.Error())
+			return
+		}
 	}
 }
 
