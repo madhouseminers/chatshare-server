@@ -7,7 +7,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o chatshare cmd/chatshare/m
 FROM scratch as runner
 
 COPY --from=builder /src/chatshare /usr/bin/chatshare
-COPY --from=builder /etc/ssl/certs/Comodo_AAA_Services_root.pem /etc/ssl/certs/
+COPY --from=builder /etc/ssl/certs ./etc/ssl/certs
 EXPOSE 8080
 
 CMD ["/usr/bin/chatshare"]
